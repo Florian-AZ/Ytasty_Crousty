@@ -1,9 +1,12 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import declarative_base, sessionmaker
 
-DATABASE_URL = "postgresql://ytasty:ytasty_password@localhost:5432/ytasty"
+from app.core.config import settings
 
-engine = create_engine(DATABASE_URL)
+
+engine = create_engine(
+    settings.DATABASE_URL
+)
 
 SessionLocal = sessionmaker(
     autocommit=False,
@@ -16,6 +19,7 @@ Base = declarative_base()
 
 def get_db():
     db = SessionLocal()
+
     try:
         yield db
     finally:
