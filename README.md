@@ -1,8 +1,6 @@
-# Ytasty Crousty — API (point de départ)
+# Ytasty Crousty — API
 
-FastAPI + PostgreSQL + SQLAlchemy, géré avec uv.
-Contient uniquement la route `GET /health`. Le reste est à construire
-sur le même modèle.
+Backend FastAPI + PostgreSQL + SQLAlchemy, géré avec uv.
 
 ## Lancer le projet
 
@@ -12,8 +10,10 @@ docker compose up --build
 
 - API : http://localhost:8000/health
 - Swagger : http://localhost:8000/docs
+- OpenAPI : http://localhost:8000/openapi.json
 
-Sans Docker :
+Sans Docker (nécessite un PostgreSQL local et un fichier `.env`,
+voir `.env.example`) :
 
 ```bash
 uv sync
@@ -24,38 +24,34 @@ uv run uvicorn app.main:app --reload
 
 ```
 app/
-├── main.py                  crée l'app et branche les routers
-├── common/
-│   └── errors.py            messages et exceptions partagés
+├── main.py                  crée l'app, /health, branche les routers
 ├── core/
-│   ├── config.py            variables d'environnement
-│   └── database.py          engine SQLAlchemy + get_db()
-└── modules/
-    └── health/
-        ├── router.py        reçoit le HTTP
-        ├── service.py       décide
-        └── schemas.py       forme des données
+│   ├── config.py            variables d'environnement (.env)
+│   └── security.py          hash des mots de passe + JWT
+├── database/
+│   ├── database.py          engine SQLAlchemy + get_db()
+│   └── models/              les tables (users, restaurants, products...)
+├── schemas/                 schémas Pydantic (entrées / sorties de l'API)
+└── routers/                 endpoints, un fichier par ressource
 ```
 
-Un module = un dossier. Pour ajouter une fonctionnalité, on copie le
-dossier `health/`, on le renomme, et on branche son router dans `main.py`.
+Pour ajouter une fonctionnalité : son modèle dans `database/models/`,
+ses schémas dans `schemas/`, ses endpoints dans `routers/`, puis on
+branche le router dans `main.py` avec `app.include_router(...)`.
 
-Dès qu'un module parle à la base, il gagne deux fichiers :
-`models.py` (les tables) et `repository.py` (les requêtes SQLAlchemy).
-`health/` n'en a pas besoin puisqu'il ne lit rien en base.
+## Configuration
 
-## Le chemin d'une requête
+Copier `.env.example` vers `.env` et remplir les valeurs.
+Aucun secret ne doit être commité : le `.env` est ignoré par Git.
 
-```
-router.py   →   service.py   →   repository.py
-reçoit          décide           interroge la base
-```
+| Variable           | Rôle                                    |
+| ------------------ | --------------------------------------- |
+| DATABASE_URL       | connexion PostgreSQL                    |
+| JWT_SECRET_KEY     | clé de signature des tokens JWT         |
+| JWT_ALGORITHM      | algorithme de signature (HS256)         |
+| JWT_EXPIRE_MINUTES | durée de validité d'un token en minutes |
 
-- `router.py` : l'URL, le code HTTP, la validation d'entrée. Zéro règle métier.
-- `service.py` : les règles (« un produit indisponible ne peut pas être
-  commandé »). Ne fait jamais de SQL.
-- `repository.py` : les requêtes SQLAlchemy. Le seul fichier qui parle à la base.
+## À venir (voir les issues GitHub)
 
-## Modules à ajouter
-
-`auth/`, `users/`, `restaurants/`, `products/`, `orders/`.
+Modèles conformes au contrat, seed (admin + 3 restaurants),
+authentification JWT, users, restaurants, products, orders, déploiement.

@@ -9,7 +9,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./db:/docker-entrypoint-initdb.d
 
   api:
     build: .
@@ -17,6 +16,7 @@ services:
       - db
     environment:
       DATABASE_URL: postgresql+psycopg://ytasty:ytasty@db:5432/ytasty
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:}
     ports:
       - "8000:8000"
     volumes:
