@@ -2,8 +2,14 @@
 
 from fastapi import FastAPI
 
-from app.modules.health.router import router as health_router
+app = FastAPI(
+    title="Ytasty Crousty API",
+    description="API backend du restaurant Ytasty Crousty",
+    version="0.1.0",
+)
 
-app = FastAPI(title="Ytasty Crousty API", version="0.1.0")
 
-app.include_router(health_router)
+@app.get("/health", tags=["health"])
+def health() -> dict[str, str]:
+    """Verifie que l'API repond."""
+    return {"status": "ok"}
