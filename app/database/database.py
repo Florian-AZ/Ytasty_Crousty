@@ -1,23 +1,25 @@
-"""Connexion a PostgreSQL avec SQLAlchemy."""
-
-from collections.abc import Generator
-
 from sqlalchemy import create_engine
-from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 from app.core.config import settings
 
-engine = create_engine(settings.database_url)
-SessionLocal = sessionmaker(bind=engine)
+
+engine = create_engine(
+    settings.DATABASE_URL
+)
+
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
+
+Base = declarative_base()
 
 
-class Base(DeclarativeBase):
-    """Classe de base de tous les modeles."""
-
-
-def get_db() -> Generator[Session, None, None]:
-    """Ouvre une session, la fournit a la route, puis la ferme."""
+def get_db():
     db = SessionLocal()
+
     try:
         yield db
     finally:
